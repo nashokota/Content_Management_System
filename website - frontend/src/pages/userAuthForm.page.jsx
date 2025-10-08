@@ -1,3 +1,4 @@
+// src/pages/UserAuthForm.page.jsx
 import { useContext } from "react";
 import InputBox from "../components/input.component";
 import googleIcon from "../imgs/google.png";
@@ -13,9 +14,9 @@ const UserAuthForm = ({ type }) => {
   const { userAuth: { access_token }, setUserAuth } = useContext(UserContext);
   const serverRoute = type === "sign-in" ? "/signin" : "/signup";
 
-  const userAuthThroughServer = (serverRoute, formData) => {
+  const userAuthThroughServer = (route, formData) => {
     axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + serverRoute, formData)
+      .post(import.meta.env.VITE_SERVER_DOMAIN + route, formData)
       .then(({ data }) => {
         storeInSession("user", JSON.stringify(data));
         setUserAuth(data);
@@ -27,8 +28,6 @@ const UserAuthForm = ({ type }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // ✅ Safely get form data from the submitted form (e.target)
     const form = e.target;
     const email = form.email.value;
     const password = form.password.value;
@@ -37,40 +36,27 @@ const UserAuthForm = ({ type }) => {
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
 
-    // Form validation
     if (type !== "sign-in") {
       if (!fullname || fullname.length < 3) {
         return toast.error("Full name must be at least 3 characters long.");
       }
     }
-
-    if (!email) {
-      return toast.error("Enter a valid email.");
-    }
-    if (!emailRegex.test(email)) {
-      return toast.error("Email is invalid.");
-    }
+    if (!email) return toast.error("Enter a valid email.");
+    if (!emailRegex.test(email)) return toast.error("Email is invalid.");
     if (!passwordRegex.test(password)) {
-      return toast.error(
-        "Password must be between 6 to 20 characters long and contain at least one numeric digit, one uppercase and one lowercase letter."
-      );
+      return toast.error("Password must be between 6 to 20 characters long and contain at least one numeric digit, one uppercase and one lowercase letter.");
     }
 
-    const formData = { fullname, email, password };
-    userAuthThroughServer(serverRoute, formData);
+    userAuthThroughServer(serverRoute, { fullname, email, password });
   };
 
-  const handleGoogleAuth = (e) => {
+  const handleGoogleAuth = async (e) => {
     e.preventDefault();
+    const result = await authWithGoogle();
+    if (!result) return;
 
-    authWithGoogle()
-      .then((user) => {
-        console.log(user);
-      })
-      .catch((error) => {
-        toast.error("Trouble signing in with Google");
-        console.log(error);
-      });
+    // ✅ Send the ID token
+    userAuthThroughServer("/google-auth", { access_token: result.idToken });
   };
 
   return access_token ? (
@@ -83,26 +69,11 @@ const UserAuthForm = ({ type }) => {
           <h1 className="text-4xl font-gelasio capitalize text-center md-24">
             {type === "sign-in" ? "Welcome back" : "Join us today!"}
           </h1>
-          {type !== "sign-in" ? (
-            <InputBox
-              name="fullname"
-              placeholder="Full Name"
-              type="text"
-              icon="fi-rr-user"
-            />
-          ) : null}
-          <InputBox
-            name="email"
-            placeholder="Email"
-            type="email"
-            icon="fi-rr-envelope"
-          />
-          <InputBox
-            name="password"
-            placeholder="Password"
-            type="password"
-            icon="fi-rr-lock"
-          />
+          {type !== "sign-in" && (
+            <InputBox name="fullname" placeholder="Full Name" type="text" icon="fi-rr-user" />
+          )}
+          <InputBox name="email" placeholder="Email" type="email" icon="fi-rr-envelope" />
+          <InputBox name="password" placeholder="Password" type="password" icon="fi-rr-lock" />
           <button className="btn-dark center mt-14" type="submit">
             {type === "sign-in" ? "Sign In" : "Sign Up"}
           </button>
