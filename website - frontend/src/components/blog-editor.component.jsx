@@ -2,15 +2,28 @@ import { Link } from "react-router-dom";
 import logo from "../imgs/logo.png";
 import AnimationWrapper from "../common/page-animation";
 import defaultBanner from "../imgs/blog banner.png";
-import { useRef, useContext, useState } from "react"; // ✅ Added useState
-import { EditorContext } from "../pages/editor.pages";
+import { useRef, useContext, useState, useEffect } from "react"; // ✅ Added useState
+import  { EditorContext } from "../pages/editor.pages";
 import { uploadFile } from "../common/cloudinary";
+import EditorJS from '@editorjs/editorjs';
+import { tools } from "../components/tools.component";
+import toast from "react-hot-toast";
 
 const BlogEditor = () => {
   // ✅ ADD THIS LINE - Missing state declaration
   const [uploading, setUploading] = useState(false);
   
-  let { blog, blog: { title, banner, content, tags, des }, setBlog } = useContext(EditorContext);
+  let { blog, blog: { title, banner, content, tags, des }, setBlog, textEditor, setTextEditor, setEditorState } = useContext(EditorContext);
+
+  //useEffect
+  useEffect(() => {
+      setTextEditor(new EditorJS({
+          holderId: "textEditor",
+          data:'',
+          tools: tools,
+          placeholder: "Write your blog here...",
+      }))
+  },[])
 
   const handleBannerUpload = async (e) => {
     const file = e.target.files[0];
@@ -64,6 +77,28 @@ const BlogEditor = () => {
     e.target.src = defaultBanner;
   };
 
+  const handlePublishEvent = () =>{
+    if(!banner.length){
+        return toast.error("Upload a banner to publish your blog.");
+    }
+
+    if(!title.length){
+        return toast.error("Enter a title to publish your blog.");
+    }
+    if(textEditor.isReady){
+        textEditor.save().then(data=>{
+            if(data.blocks.length){
+                setBlog({...blog, content: data});
+                setEditorState("Publish")
+            }else{
+                return toast.error("Write something to publish your blog.");
+            }
+        }).catch((err) =>{
+            console.log(err);
+        })
+    }
+  }
+
   return (
     <>
       <nav className="navbar">
@@ -78,8 +113,9 @@ const BlogEditor = () => {
           <button 
             className="btn-dark py-2"
             disabled={uploading} // ✅ Disable during upload
+            onClick={handlePublishEvent}
           >
-            {uploading ? "Uploading..." : "Publish"}
+            Publish
           </button>
           <button className="btn-light py-2">
             Save
@@ -91,7 +127,6 @@ const BlogEditor = () => {
           <div className="mx-auto max-w-[900px] w-full">
             <div className="relative aspect-video hover:opacity-80 bg-white border-grey cursor-pointer">
               <label htmlFor="uploadBanner">
-                {/* ✅ Show uploaded banner or default */}
                 <img 
                   src={banner} 
                   className="z-20"
@@ -121,6 +156,8 @@ const BlogEditor = () => {
             ></textarea>
 
             <hr className="w-full opacity-10 my-5"/>
+
+            <div id="textEditor" className="font-gelasio"></div>
 
           </div>
         </section>
