@@ -48,6 +48,14 @@ mongoose.connect(process.env.DB_LOCATION, {
   autoIndex: true,
 })
 
+//setting up s3 bucket 52 mins
+
+// generate upload url function
+
+// upload image url route 
+
+
+
 const formatDatatoSend = (user) => {
 
     const access_token = jwt.sign({id:user._id}, process.env.SECRET_ACCESS_KEY)
