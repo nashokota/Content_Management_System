@@ -3,13 +3,20 @@ import AnimationWrapper from "../common/page-animation";
 import { Toaster, toast } from "react-hot-toast";
 import { EditorContext } from "../pages/editor.pages";
 import Tag from "./tags.component";
+import axios from "axios";
+import { UserContext } from "../App";
+import { useNavigate } from "react-router-dom";
 
 const PublishForm = () => {
 
-    let charaacterLimit = 200;
+    let characterLimit = 200;
     let tagLimit = 10;
 
-    let{ blog,blog: { banner, title, tags, des }, setEditorState, setBlog } = useContext(EditorContext)
+    let{ blog,blog: { banner, title, tags, des, content }, setEditorState, setBlog } = useContext(EditorContext);
+
+    let { userAuth: { access_token } } = useContext(UserContext);
+
+    let navigate = useNavigate();
     
     const handleCloseEvent = () => {
         setEditorState("editor")
@@ -50,6 +57,49 @@ const PublishForm = () => {
         }
     }
 
+    const publishBlog = (e) =>{
+
+        if(e.target.className.includes('disable')){
+            return ;
+        }
+
+        if(!title.length){
+            return toast.error("You must provide a title to publish the blog.");
+        }
+
+        if(!des.length || des.length>characterLimit){
+            return toast.error(`You must provide blog description under ${characterLimit} characters.`);
+        }
+
+        if(!tags.length){
+            return toast.error("You must provide one blog tags to publish it.");
+        }
+
+        let loadingToast = toast.loading("Publishing your blog...");
+
+        e.target.classList.add('disable');
+
+        let blogObj = {
+            title, banner, des, content, tags, draft: false 
+        }
+
+        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/create-blog", blogObj, { headers: { "Authorization": `Bearer ${access_token}` }}).then(({ data }) => {
+           e.target.classList.remove('disable');
+
+           toast.dismiss(loadingToast);
+           toast.success("Published your blog successfully.");
+
+           setTimeout(() => {
+               navigate("/");
+           },500);
+        }).catch(({ response }) => {
+            e.target.classList.remove('disable');
+            toast.dismiss(loadingToast);
+            return toast.error(response.data.error);
+        });
+
+    }
+
     return (
         <AnimationWrapper>
             <section className="w-screen min-h-screen grid items-center lg:grid-cols-2 py-16 lg:gap-2">
@@ -79,7 +129,7 @@ const PublishForm = () => {
 
                     <p className="text-dark-grey mb-2 mt-9">Short description about your blog</p>
 
-                    <textarea maxLength={charaacterLimit}
+                    <textarea maxLength={characterLimit}
                         defaultValue={des}
                         className="h-40 resize-none leading-7 input-box pl-4"
                         onChange={handleBlogDesChange}
@@ -88,7 +138,7 @@ const PublishForm = () => {
                         
                     </textarea>
 
-                    <p className="text-dark-grey text-sm mt-1 text-right">{ charaacterLimit - des.length }characters left</p>
+                    <p className="text-dark-grey text-sm mt-1 text-right">{ characterLimit - des.length }characters left</p>
 
                     <p className="text-dark-grey mb-2 mt-9">Topics - (Helps in searching and ranking your blog post)</p>
 
@@ -97,10 +147,12 @@ const PublishForm = () => {
                         className="sticky input-box bg-white top-0 left-0 pl-4 mb-3 focus:bg-white"
                         onKeyDown={handleKeyDown} />
                         {
-                            tags.map((tag, index) => {return <Tag tag={tag} key={index}/>})
+                            tags.map((tag, index) => {return <Tag tag={tag} tagIndex={index} key={index}/>})
                         }
                     </div>
+                        <p className="text-dark-grey text-sm mt-1 mb-4 text-right">{ tagLimit - tags.length } Tags left</p>
 
+                        <button className="btn-dark px-8" onClick={publishBlog}>Publish</button>
                 </div>
             </section>
         </AnimationWrapper>
