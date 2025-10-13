@@ -1,16 +1,16 @@
-POST http://localhost:3000/create-blog
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZWE1Y2U4NTJmN2Q0YzNmZDVhZmIwOSIsImlhdCI6MTc2MDE4OTY3Mn0.RXLuhBSQ8xiGfulTeA7n_euOxLhQOucQVqzrpNK9jqg
+GET http://localhost:3000/latest-blogs
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZWE1Y2U4NTJmN2Q0YzNmZDVhZmIwOSIsImlhdCI6MTc2MDE4OTY3Mn0.RXLuhBSQ8xiGfulTeA7n_euOxLhQOucQVqzrpNK9jqg
 
-{
-    "title":"test title",
-    "banner": "https://example.com/image-url",
-    "des": "This is a short des",
-    "content":{
-        "blocks": [ 1, 2 ]
-    },
-    "tags": [ "tag1", "tag2" ]
-}
+# {
+#     "title":"test title",
+#     "banner": "https://example.com/image-url",
+#     "des": "This is a short des",
+#     "content":{
+#         "blocks": [ 1, 2 ]
+#     },
+#     "tags": [ "tag1", "tag2" ]
+# }
 
 # POST  http://localhost:3000/signup
 # Content-Type: application/json
