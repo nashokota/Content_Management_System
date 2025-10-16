@@ -1,9 +1,17 @@
-POST http://localhost:3000/get-profile
+POST http://localhost:3000/get-blog
 Content-Type: application/json
 
 {
-    "username": "ahjg"
+    "blog_id": "Somewhere-in-JapanFpQLVbXdAHWPfeTTvLS98"
 }
+
+# POST http://localhost:3000/get-profile
+# Content-Type: application/json
+
+# {
+#     "username": "admin"
+# }
+
 
 # Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZWE1Y2U4NTJmN2Q0YzNmZDVhZmIwOSIsImlhdCI6MTc2MDE4OTY3Mn0.RXLuhBSQ8xiGfulTeA7n_euOxLhQOucQVqzrpNK9jqg
 
