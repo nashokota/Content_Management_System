@@ -7,6 +7,7 @@ import AnimationWrapper from "../common/page-animation";
 import Loader from "../components/loader.component";
 import { getDay } from "../common/date";
 import BlogInteraction from "../components/blog-interaction.component";
+import { createContext } from "react";
 
 export const blogDataStructure = {
     title: '',
@@ -17,6 +18,8 @@ export const blogDataStructure = {
     banner: '',
     publishedAt: '',
 }
+
+export const BlogContext = createContext({}); 
 
 const BlogPage = () => {
 
@@ -48,6 +51,7 @@ const BlogPage = () => {
             {
                 loading ? <Loader/>
                 :
+                <BlogContext.Provider value={{blog, setBlog}}>
                 <div className="max-w-[900px] center py-10 max-lg:px-[5vw]">
                     <img src={banner} className="aspect-video"/>
                     <div className="mt-12">
@@ -71,6 +75,7 @@ const BlogPage = () => {
                     <BlogInteraction />
 
                 </div>
+                </BlogContext.Provider>
             }
         </AnimationWrapper>
     )
