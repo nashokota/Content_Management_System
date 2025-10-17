@@ -11,6 +11,7 @@ import { createContext } from "react";
 import BlogPostCard from "../components/blog-post.component";
 import BlogContent from "../components/blog-content.component";
 import CommentsContainer from "../components/comments.component";
+import { fetchComments } from "../components/comments.component";
 
 export const blogDataStructure = {
     title: '',
@@ -36,9 +37,11 @@ const BlogPage = () => {
 
     let {title, content, banner, author:{personal_info:{fullname, username:author_username, profile_img}}, publishedAt } = blog;
 
-    const fetchBlog = () => {
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/get-blog", { blog_id })
-        .then(({data: {blog}}) => {
+    const fetchBlog = async() => {
+        await axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/get-blog", { blog_id })
+        .then(async({data: {blog}}) => {
+
+            blog.comments = await fetchComments({blog_id: blog._id, setParentCommentCountFun: setTotalParentCommentsLoaded});
 
             setBlog(blog);
 
@@ -103,7 +106,7 @@ const BlogPage = () => {
 
                     <div className="my-12 font-gelasio blog-page-content">
                         {
-                            content[0].blocks.map((block, i) => {
+                            content?.[0]?.blocks?.map((block, i) => {
                                 return <div key={i} className="my-4 md:my-8">
                                     <BlogContent block={block} />
                                 </div>
