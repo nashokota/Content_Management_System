@@ -421,6 +421,45 @@ server.post("/isliked-by-user",verifyJWT, (req, res) => {
     
 })
 
+server.post("/add-comment", verifyJWT, (req, res) => {
+    let user_id = req.user;
+
+    let { _id, comment, blog_author } = req.body;
+
+    if(!comment.length){
+        return res.status(403).json({error: "Write something to leave a comment"});
+    }
+    //creating a comment doc
+    let commentObj = new Comment({
+        blog_id: _id,
+        blog_author,
+        comment,
+        commented_by: user_id,
+    })
+
+    commentObj.save().then((commentFile) => {
+        let {comment, commentedAt, children } = commentFile;
+
+        Blog.findOneAndUpdate({_id}, {$push: {"comments": commentFile._id}, $inc: {"activity.total_comments": 1},"activity.total_parent_comments": 1})
+        .then((blog) => {
+            console.log('comment added');
+        }).catch(err => {
+            return res.status(500).json({error: err.message});
+        });
+
+        let notification = new Notification({type: "comment", blog: _id, notification_for: blog_author, user: user_id, comment: commentFile._id});
+
+        notification.save().then((notification) => {
+            console.log('notification added');
+            return res.status(200).json({comment, commentedAt, _id: commentFile._id, user_id, children});
+        }).catch(err => {
+            return res.status(500).json({error: err.message});
+        });
+    }).catch(err => {
+        return res.status(500).json({error: err.message});
+    });
+});
+
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
