@@ -1,9 +1,9 @@
-POST http://localhost:3000/get-blog
-Content-Type: application/json
+# POST http://localhost:3000/get-blog
+# Content-Type: application/json
 
-{
-    "blog_id": "Somewhere-in-JapanFpQLVbXdAHWPfeTTvLS98"
-}
+# {
+#     "blog_id": "Somewhere-in-JapanFpQLVbXdAHWPfeTTvLS98"
+# }
 
 # POST http://localhost:3000/get-profile
 # Content-Type: application/json
@@ -25,14 +25,25 @@ Content-Type: application/json
 #     "tags": [ "tag1", "tag2" ]
 # }
 
-# POST  http://localhost:3000/signup
+# POST  http://localhost:3000/signin
 # Content-Type: application/json
 
 # {
-#     "fullname": "john",
 #     "email": "john@gmail.com",
-#     "password": "John@123"
+#     "password": "John@321"
 # }
 
 # 
 # eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZWE1Y2U4NTJmN2Q0YzNmZDVhZmIwOSIsImlhdCI6MTc2MDE4OTY3Mn0.RXLuhBSQ8xiGfulTeA7n_euOxLhQOucQVqzrpNK9jqg
+
+# john's token
+#  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZWE1Y2U4NTJmN2Q0YzNmZDVhZmIwOSIsImlhdCI6MTc2MDc4MjkxNH0.563oPpjS6HbcqLACQ8z5JHY0PYNxzoFxAFIPz9aAiHo
+
+POST http://localhost:3000/change-password
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZWE1Y2U4NTJmN2Q0YzNmZDVhZmIwOSIsImlhdCI6MTc2MDc4MjkxNH0.563oPpjS6HbcqLACQ8z5JHY0PYNxzoFxAFIPz9aAiHo
+
+{
+    "currentPassword":"John@321",
+    "newPassword" :"John@123"
+}
