@@ -343,6 +343,18 @@ server.post("/get-profile", (req, res) => {
     });
 })
 
+server.post("/update-profile-img", verifyJWT, (req, res) => {
+    let { url } = req.body;
+
+    User.findOneAndUpdate({_id: req.user}, {$set: {"personal_info.profile_img": url}})
+    .then(() => {
+        return res.status(200).json({ url});
+    })
+    .catch(err => {
+        return res.status(500).json({error: err.message});
+    });
+})
+
 server.post("/create-blog",verifyJWT, (req, res) => {
     
     let authorId = req.user;
