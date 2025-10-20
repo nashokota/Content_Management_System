@@ -355,6 +355,77 @@ server.post("/update-profile-img", verifyJWT, (req, res) => {
     });
 })
 
+server.post("/update-profile", verifyJWT, (req, res) => {
+    let { username, bio = "", social_links = {} } = req.body;
+    let bioLimit = 150;
+
+    if (!username) {
+        return res.status(403).json({error: "Username is required"});
+    }
+
+    // Ensure bio is a string
+    bio = bio || "";
+    if(bio.length > bioLimit){
+        return res.status(403).json({error: `Bio must be less than ${bioLimit} characters long.`});
+    }
+
+    // Ensure social_links is an object
+    social_links = social_links || {};
+    let socialLinksArr = Object.keys(social_links);
+
+    try {
+        for(let i = 0; i < socialLinksArr.length; i++) {
+            const key = socialLinksArr[i];
+            const link = social_links[key];
+            
+            // Skip if link is empty
+            if (!link || !link.trim().length) {
+                social_links[key] = ""; // Ensure empty string for empty links
+                continue;
+            }
+
+            // Validate URL format
+            try {
+                const url = new URL(link);
+                if (!url.protocol.startsWith('http')) {
+                    return res.status(403).json({error: `${key} link must start with http:// or https://`});
+                }
+                
+                const hostname = url.hostname.toLowerCase();
+                // Special case for website links
+                if (key !== 'website') {
+                    if (!hostname.includes(`${key}.com`)) {
+                        return res.status(403).json({
+                            error: `Invalid ${key} URL. Must be from ${key}.com domain`
+                        });
+                    }
+                }
+            } catch (urlError) {
+                return res.status(403).json({error: `Invalid URL format for ${key}`});
+            }
+        }
+    } catch (err) {
+        return res.status(500).json({error: "Error validating social links. Please check URL formats"});
+    }
+
+    let updateObj = {
+        "personal_info.username": username,
+        "personal_info.bio": bio,
+        social_links
+    }
+
+    User.findOneAndUpdate({_id: req.user}, updateObj, {runValidators: true})
+    .then(() => {
+        return res.status(200).json({username});
+    })
+    .catch(err => {
+        if(err.code === 11000){
+            return res.status(409).json({error: "Username already exists"});
+        }
+        return res.status(500).json({error: err.message});
+    });
+})
+
 server.post("/create-blog",verifyJWT, (req, res) => {
     
     let authorId = req.user;

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { profileDataStructure } from "./profile.page";
 import AnimationWrapper from "../common/page-animation";
 import Loader from "../components/loader.component";
-import toast, { Toaster } from "react-hot-toast";
+import  {toast, Toaster } from "react-hot-toast";
 import InputBox from "../components/input.component";
 import { useRef } from "react";
 import { storeInSession } from "../common/session";
@@ -14,18 +14,29 @@ import { uploadFile } from "../common/cloudinary";
 
 
 const EditProfile = () => {
-    let {userAuth, userAuth: {access_token}, setUserAuth} = useContext(UserContext);
+    let {userAuth = {}, setUserAuth} = useContext(UserContext) || {};
+    let access_token = userAuth?.access_token;
 
     let bioLimit = 150;
 
     let profileImgEle = useRef();
+    let editProfileForm = useRef();
 
     const [profile, setProfile] = useState(profileDataStructure);
     const [loading, setLoading] = useState(true);
     const [charactersLeft, setCharactersLeft] = useState(bioLimit);
     const [updatedProfileImg, setUpdatedProfileImg] = useState(null);
 
-    let{ personal_info: { fullname, username: profile_username, profile_img, email, bio }, social_links } = profile;
+    let { 
+        personal_info: { 
+            fullname = "", 
+            username: profile_username = "", 
+            profile_img = "", 
+            email = "", 
+            bio = "" 
+        } = {}, 
+        social_links = {} 
+    } = profile || {};
 
     //corrected 
 //     let {
@@ -103,11 +114,57 @@ const EditProfile = () => {
         }
     }
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        if (!editProfileForm.current) {
+            return toast.error("Form not loaded yet");
+        }
+
+        let form = new FormData(editProfileForm.current);
+        let formData = {};
+
+        for(let [key, value] of form.entries()){
+            formData[key] = value || ""; // Ensure empty strings instead of undefined
+        }
+
+        let { username = "", bio = "", youtube = "", facebook = "", twitter = "", instagram = "", github = "", website = "" } = formData;
+
+        if(!username || username.length < 3){
+            return toast.error("Username must be at least 3 characters long.");
+        }
+        if(bio.length > bioLimit){
+            return toast.error(`Bio must be less than ${bioLimit} characters long.`);
+        }
+        let loadingToast = toast.loading("Updating Profile...");
+        e.target.setAttribute("disabled", true);
+
+        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/update-profile",{username, bio, social_links: {youtube, facebook, twitter, instagram, github, website}}, {headers: {Authorization: `Bearer ${access_token}`}})
+        .then(({data}) => {
+           
+            if(userAuth.username != data.username){
+                let newUserAuth = {...userAuth, username: data.username};
+
+                storeInSession("user", JSON.stringify(newUserAuth));
+                setUserAuth(newUserAuth);
+            }
+
+            toast.dismiss(loadingToast);
+            e.target.removeAttribute("disabled");
+            toast.success("Profile updated successfully.");
+        })
+        .catch(({response}) => {
+            toast.dismiss(loadingToast);
+            e.target.removeAttribute("disabled");
+            toast.error(response.data.error);
+        })
+    }    
+
     return (
             <AnimationWrapper>
                 {
                     loading ? <Loader/> :
-                    <form>
+                    <form ref={editProfileForm}>
                         <Toaster/>
 
                         <h1 className="max-md:hidden">Edit Profile</h1>
@@ -144,7 +201,7 @@ const EditProfile = () => {
 
                                 <InputBox name="username" type="text" 
                                 placeholder="Username" value={profile_username} 
-                                disable={true} icon="fi-rr-at"/>
+                                disable={false} icon="fi-rr-at"/>
 
                                 <p className="text-dark-grey -mt-3">Username will use to search user and will be visible to all users</p>
 
@@ -158,14 +215,23 @@ const EditProfile = () => {
                                 <div className="md:grid md:grid-cols-2 gap-x-6">
                                     {
                                         Object.keys(social_links).map((key,i) =>{
-                                            let link = social_links[key];
+                                            let link = social_links[key] || "";
 
-                                            return <InputBox key={i} name={key} type="text" placeholder="https://" icon={"fi " +(key!='website' ? "fi-brands-" + key : "fi-rr-globe")} value={link} />
+                                            return <InputBox 
+                                                key={i} 
+                                                name={key} 
+                                                type="text" 
+                                                placeholder="https://" 
+                                                value={link}
+                                                defaultValue=""
+                                                icon={"fi " +(key!='website' ? "fi-brands-" + key : "fi-rr-globe")} 
+                                            />
                                         })
                                     }
                                 </div>
 
-                                <button className="btn-dark w-auto px-10" type="submit">Update</button>
+                                <button className="btn-dark w-auto px-10" 
+                                type="submit" onClick={handleSubmit}>Update</button>
                             </div>
 
                         </div>
