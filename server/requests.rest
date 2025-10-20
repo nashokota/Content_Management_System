@@ -29,8 +29,8 @@
 # Content-Type: application/json
 
 # {
-#     "email": "john@gmail.com",
-#     "password": "John@321"
+#     "email": "admin@gmail.com",
+#     "password": "Admin123"
 # }
 
 # 
@@ -39,11 +39,12 @@
 # john's token
 #  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZWE1Y2U4NTJmN2Q0YzNmZDVhZmIwOSIsImlhdCI6MTc2MDc4MjkxNH0.563oPpjS6HbcqLACQ8z5JHY0PYNxzoFxAFIPz9aAiHo
 
-POST http://localhost:3000/change-password
+POST http://localhost:3000/user-written-blogs
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZWE2YzU2NTVkZmI4OWU4ODIyMDQ1MyIsImlhdCI6MTc2MDk4MDYxOH0.whZZ1Jm75V0G4qua5lW1BlSx3PoQ-dOwfA3sOMbN-1k
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZWE1Y2U4NTJmN2Q0YzNmZDVhZmIwOSIsImlhdCI6MTc2MDc4MjkxNH0.563oPpjS6HbcqLACQ8z5JHY0PYNxzoFxAFIPz9aAiHo
 
 {
-    "currentPassword":"John@321",
-    "newPassword" :"John@123"
+   "page": 1,
+   "draft":false
+
 }
