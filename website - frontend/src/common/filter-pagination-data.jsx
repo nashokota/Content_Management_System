@@ -14,7 +14,7 @@ export const filterPaginationData =async ({create_new_arr = false, state, data, 
           headers: { Authorization: `Bearer ${user}` },
         } )
         .then( ({data:{ totalDocs }})  => {
-            obj = { results:data, page: 1, totalDocs}
+            obj = { results:data, page: 1, totalDocs, deletedDocCount: 0}
         }).catch(err => {
             console.log(err);
         });   
