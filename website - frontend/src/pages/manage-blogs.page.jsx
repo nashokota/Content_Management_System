@@ -7,7 +7,8 @@ import InPageNavigation from "../components/inpage-navigation.component";
 import Loader from "../components/loader.component";
 import NoDataMessage from "../components/nodata.component";
 import AnimationWrapper from "../common/page-animation";
-import ManagePublishedBlogsCard from "../components/manage-blogcard.component";
+import { ManagePublishedBlogsCard, ManageDraftBlogPost } from "../components/manage-blogcard.component";
+import LoadMoreDataBtn from "../components/load-more.component";
 
 const ManageBlogs = () => {
 
@@ -17,9 +18,9 @@ const ManageBlogs = () => {
 
     let { userAuth: { access_token } } = useContext(UserContext);
 
-    const getBlogs = ({page, draft, deleteDocCount=0}) => {
+    const getBlogs = ({page, draft, deletedDocCount=0}) => {
 
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/user-written-blogs", { query, page, draft, deleteDocCount },{ headers: { Authorization: `Bearer ${access_token}` } })
+        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/user-written-blogs", { query, page, draft, deletedDocCount },{ headers: { Authorization: `Bearer ${access_token}` } })
         .then(async ({data}) => {
             
             let formatedData = await filterPaginationData({
@@ -96,14 +97,35 @@ const ManageBlogs = () => {
                     {
                         blogs.results.map((blog, i)=>{
                             return <AnimationWrapper key={i} transition={{delay: i*0.04}}>
-                                <ManagePublishedBlogsCard blog={blog} />
+                                <ManagePublishedBlogsCard blog={{...blog, index: i, setStateFunc: setBlogs}} />
                             </AnimationWrapper>
                         })
                     }
+
+                    <LoadMoreDataBtn state={blogs} fetchDataFun={getBlogs} additionalParam={{draft: false, deletedDocCount: blogs.deletedDocCount}}/>
+
                     </>
                     : <NoDataMessage message={"No published blog found"}/>
                 }
-                <h1>This is Drafts</h1>
+                
+                {
+                    //draft blogs
+                    drafts == null? <Loader/> :
+                    drafts.results.length ?
+                    <>
+                    {
+                        drafts.results.map((blog, i)=>{
+                            return <AnimationWrapper key={i} transition={{delay: i*0.04}}>
+                                <ManageDraftBlogPost blog={{...blog, index: i, setStateFunc: setDrafts}}/>
+                            </AnimationWrapper>
+                        })
+                    }
+
+                    <LoadMoreDataBtn state={drafts} fetchDataFun={getBlogs} additionalParam={{draft: true, deletedDocCount: drafts.deletedDocCount}}/>
+
+                    </>
+                    : <NoDataMessage message={"No published blog found"}/>
+                }
             </InPageNavigation>
         </>
     )
